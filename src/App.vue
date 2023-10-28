@@ -1,35 +1,27 @@
 <template>
-  <div class="hello">
-    <table>
-      <caption class="monthCaption">
-        {{
-          this.months[this.currMonth]
-        }}
-      </caption>
-      <tr>
-        <th
-          v-for="weekday in 7"
-          :key="weekday"
-          :class="
-            String(this.weekdays[(weekday - 1 + this.startOfTheWeek) % 7])
-          "
-        >
-          {{ this.weekdays[(weekday - 1 + this.startOfTheWeek) % 7] }}
-        </th>
-      </tr>
-      <tr v-for="week in this.getDays" :key="week">
-        <td
-          v-for="day in week"
-          :key="day"
-          :class="String(weekdays[day.getDay()])"
-        >
-          <div
-            class="dateCaption"
-            :class="{ currentMonth: day.getMonth() == this.currMonth }"
-          >
-            {{ day.getDate() }}
-          </div>
-          <div
+  <div>
+    <div class="wrapper">
+      <div class="monthCaption" style="--start: 1; --end: 8">
+        {{ this.months[this.currMonth] }}
+      </div>
+      <div
+        v-for="weekday in 7"
+        :key="weekday"
+        :class="String(this.weekdays[(weekday - 1 + this.startOfTheWeek) % 7])"
+        class="weekDayCaption"
+      >
+        {{ this.weekdays[(weekday - 1 + this.startOfTheWeek) % 7] }}
+      </div>
+      <div
+        v-for="(day, dayNo) in this.getDays"
+        :key="day"
+        :class="this.getDateCaptionClass(day)"
+        class="dateCaption calElement"
+        :style="this.getDateCaption(day, dayNo)"
+      >
+        {{ day.getDate() }}
+      </div>
+      <!-- <div
             class="event"
             :class="this.dayStartsEvent('north', day)"
             :rowspan="1"
@@ -39,12 +31,7 @@
             class="event"
             :class="this.dayStartsEvent('south', day)"
             :rowspan="1"
-          ></div>
-        </td>
-      </tr>
-    </table>
-    <div class="wrapper">
-      <div class="north"></div>
+          ></div> -->
     </div>
   </div>
 </template>
@@ -144,30 +131,38 @@ export default {
         ? true
         : false;
     },
+    getDateCaption(day, dayNo) {
+      let weekNo = Math.ceil((dayNo + 1) / 7);
+      let x = `--colStart: ${
+        Math.abs((7 + day.getDay() - this.startOfTheWeek) % 7) + 1
+      }; --rowStart: ${weekNo * 3}`;
+      console.log(x);
+      return x;
+    },
+    getDateCaptionClass(day) {
+      let bla = String(this.weekdays[day.getDay()]);
+      console.log(day.getMonth() == this.currMonth);
+      return { [bla]: true, currentMonth: day.getMonth() == this.currMonth };
+    },
   },
   computed: {
     currStartOfTheMonth() {
       return new Date(this.currYear, this.currMonth, 1);
     },
     getDays() {
-      let numberOfWeeks = this.getDaysToShow / 7;
-      let weeks = [];
+      //let numberOfWeeks = this.getDaysToShow / 7;
+      let days = [];
       let daysBeforeMonth =
         Math.abs(this.currStartOfTheMonth.getDay() - this.startOfTheWeek + 7) %
         7;
 
       let dayOffset = -daysBeforeMonth;
 
-      for (let week = 0; week < numberOfWeeks; week++) {
-        for (let day = 0; day < 7; day++) {
-          if (day == 0) weeks[week] = [];
-          weeks[week].push(
-            new Date(this.currYear, this.currMonth, 1 + dayOffset)
-          );
-          dayOffset++;
-        }
+      for (let day = 0; day < this.getDaysToShow; day++) {
+        days.push(new Date(this.currYear, this.currMonth, 1 + dayOffset));
+        dayOffset++;
       }
-      return weeks;
+      return days;
     },
     getDaysToShow() {
       let daysBeforeMonth =
@@ -191,6 +186,8 @@ export default {
 .wrapper {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  grid-auto-rows: minmax(20px, auto);
 }
 table,
 th,
@@ -235,6 +232,8 @@ td {
   background-color: #d4b483;
 }
 .monthCaption {
+  grid-column-start: var(--start);
+  grid-column-end: var(--end);
   text-align: center;
   font-size: 30px;
   height: 50px;
@@ -250,5 +249,20 @@ td {
 .end {
   clip-path: polygon(0% 0%, 50% 0%, 25% 100%, 0% 100%);
   filter: drop-shadow(5px, 5px);
+}
+.calElement {
+  grid-column-start: var(--colStart);
+  grid-column-end: var(--colEnd);
+  grid-row-start: var(--rowStart);
+  grid-row-end: var(--rowEnd);
+}
+.dateCaption {
+  font-size: 20px;
+}
+.weekDayCaption {
+  text-align: center;
+}
+grid-item {
+  height: 50px;
 }
 </style>
