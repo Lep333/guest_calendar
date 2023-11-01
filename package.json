@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "perf_hooks": "^0.0.1",
+    "repl": "^0.1.3",
     "vue": "^3.2.13"
   },
   "devDependencies": {
