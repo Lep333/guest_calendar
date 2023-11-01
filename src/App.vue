@@ -17,11 +17,16 @@
           {{ this.weekdays[(weekday - 1 + this.startOfTheWeek) % 7] }}
         </th>
       </tr>
-      <tr v-for="week in this.getDays" :key="week">
+      <tr>
+        <td colspan="7">
+      <table v-for="(week, weekNo) in this.getDays" :key="week" class="weekTable">
+        <tr>
         <td
           v-for="day in week"
           :key="day"
           :class="String(weekdays[day.getDay()])"
+          colspan="2"
+          class="weekTd"
         >
           <div
             class="dateCaption"
@@ -29,23 +34,24 @@
           >
             {{ day.getDate() }}
           </div>
-          <div
-            class="event"
-            :class="this.dayStartsEvent('north', day)"
-            :rowspan="1"
-          ></div>
-
-          <div
-            class="event"
-            :class="this.dayStartsEvent('south', day)"
-            :rowspan="1"
-          ></div>
+        </td>
+        </tr>
+        <tr>
+        <td colspan="14">
+          <div class="wrapper">
+            <div v-for="event in this.setCalEvents[weekNo]" :key="event"
+              class="event"
+              :class="'room' + event.room"
+              :style="this.getEventStyle(event)"
+            >
+            </div>
+        </div>
+      </td>
+    </tr>
+      </table>
         </td>
       </tr>
     </table>
-    <div class="wrapper">
-      <div class="north"></div>
-    </div>
   </div>
 </template>
 
@@ -80,13 +86,18 @@ export default {
       currMonth: new Date().getMonth(),
       currYear: new Date().getFullYear(),
       startOfTheWeek: 1, // "Monday"
+      rooms: 3,
       events: [
-        { slot: "north", start: new Date(), end: new Date(2023, 9, 31) },
+        { room: 1, start: new Date(), end: new Date(2023, 9, 31) },
+        { room: 1, start: new Date(2023, 9, 15), end: new Date(2023, 9, 16) },
         {
-          slot: "south",
+          room: 2,
           start: new Date(2023, 9, 23),
           end: new Date(2023, 9, 28),
         },
+        { room: 1, start: new Date(2023,9,3), end: new Date(2023, 9, 6) },
+        { room: 2, start: new Date(2023,9,3), end: new Date(2023, 9, 6) },
+        { room: 3, start: new Date(2023,9,3), end: new Date(2023, 9, 6) },
       ],
     };
   },
@@ -97,11 +108,12 @@ export default {
     setDayCaptionClass(day) {
       return `${day.getDate()}.${day.getMonth()}`;
     },
-    dayStartsEvent(slot, day) {
+    dayStartsEvent(slot, slotNo, currWeek) {
       let startsEvent = false;
       let duringEvent = false;
       let endsEvent = false;
       let cssClasses = false;
+      let day = currWeek[0] + Math.floor(slotNo / 7);
 
       for (let event of this.events) {
         if (slot == event.slot) {
@@ -144,6 +156,12 @@ export default {
         ? true
         : false;
     },
+    dayToActualCalendarDay(day) {
+      return (day.getDay() - this.startOfTheWeek + 7) % 7;
+    },
+    getEventStyle(event) {
+      return `--start: ${event.startSlot}; --end: ${event.duration}; --row: ${event.room}`;
+    },
   },
   computed: {
     currStartOfTheMonth() {
@@ -182,6 +200,45 @@ export default {
 
       return weeksToShow * 7;
     },
+    setCalEvents() {
+      let calEvents = [];
+      let calObj;
+      
+      for (let [index, week] of this.getDays.entries()) {
+        if (!calEvents[index]) calEvents[index] = [];
+        for (let day of week) {
+          for (let event of this.events) {
+            if (this.equalDay(event.start, day)) {
+              console.log(event);
+              let remainingDays = event.end.getDate() - event.start.getDate();
+              let currStartDay = event.start;
+              let weekOffset = 0;
+              
+              while (remainingDays > 0) {
+                if (!calEvents[index + weekOffset]) calEvents[index + weekOffset] = [];
+                let startslotOffset = (weekOffset > 0)? 0: 1;
+                if (this.dayToActualCalendarDay(currStartDay) > this.dayToActualCalendarDay(event.end) || currStartDay.getDay() + event.end.getDay() > 7) {
+                  let lastDayOfWeek = 6;
+                  let fullDaysThisWeek = this.dayToActualCalendarDay(week[lastDayOfWeek]) - this.dayToActualCalendarDay(currStartDay);
+                  calObj = {room: event.room, startWeek: index + weekOffset, startSlot: this.dayToActualCalendarDay(currStartDay) * 2 + startslotOffset + 1, duration: fullDaysThisWeek * 2 + this.dayToActualCalendarDay(currStartDay) * 2 + startslotOffset + 1};
+                  calEvents[index + weekOffset].push(calObj);
+                  remainingDays -= fullDaysThisWeek;
+                  weekOffset++;
+                  currStartDay = new Date(this.currYear, this.currMonth, week[0].getDate() + weekOffset * 7);
+                } else {
+                  let startEndSlot = (weekOffset > 0)? 1: 0;
+                  let stayLength = (event.end.getDate() - currStartDay.getDate())*2 + startEndSlot;
+                  calObj = {room: event.room, startWeek: index + weekOffset, startSlot: this.dayToActualCalendarDay(currStartDay) * 2 + startslotOffset + 1, duration: stayLength + this.dayToActualCalendarDay(currStartDay) * 2 + startslotOffset + 1};
+                  calEvents[index + weekOffset].push(calObj);
+                  remainingDays=0;
+                }
+              }
+            }
+          }
+        }
+      }
+      return calEvents;
+    }
   },
 };
 </script>
@@ -190,7 +247,10 @@ export default {
 <style scoped>
 .wrapper {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(14, 1fr);
+  grid-row: 100%;
+  grid-template-rows: repeat(3, 1fr);
+  height: 90px;
 }
 table,
 th,
@@ -226,13 +286,20 @@ td {
   font-weight: bold;
 }
 .event {
-  height: 30px;
+  background-color: #c1666b;
+  grid-column-start: var(--start);
+  grid-column-end: var(--end);
+  grid-row: var(--row);
+  height: 30;
 }
-.north {
+.room1 {
   background-color: #c1666b;
 }
-.south {
+.room2 {
   background-color: #d4b483;
+}
+.room3 {
+  background-color: #508991;
 }
 .monthCaption {
   text-align: center;
@@ -250,5 +317,12 @@ td {
 .end {
   clip-path: polygon(0% 0%, 50% 0%, 25% 100%, 0% 100%);
   filter: drop-shadow(5px, 5px);
+}
+.weekTable {
+  width: 100%;
+  table-layout: fixed;
+}
+.weekTd {
+  width: 1/7;
 }
 </style>
