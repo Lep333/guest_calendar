@@ -1,11 +1,15 @@
 <template>
   <div class="hello">
-    <table>
-      <caption class="monthCaption">
+    <span>
+          <span class="monthCaption">
         {{
           this.months[new Date(this.currYear, this.currMonth).getMonth()]
         }}
-      </caption>
+        </span>
+        <span @click="this.currMonth--"><div id="prevMonth">&lt;</div></span>
+        <span @click="this.currMonth++">&gt;</span>
+      </span>
+    <table>
       <tr>
         <th
           v-for="weekday in 7"
@@ -14,7 +18,7 @@
             String(this.weekdays[(weekday - 1 + this.startOfTheWeek) % 7])
           "
         >
-          {{ this.weekdays[(weekday - 1 + this.startOfTheWeek) % 7] }}
+          {{ this.getDayCaption[(weekday - 1 + this.startOfTheWeek) % 7] }}
         </th>
       </tr>
       <tr>
@@ -74,6 +78,16 @@ export default {
         "Friday",
         "Saturday",
       ],
+      weekdaysAbbr: [
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Wed",
+        "Fri",
+        "Sat"
+      ],
       months: [
         "January",
         "Febuary",
@@ -102,7 +116,9 @@ export default {
         { room: 1, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
         { room: 2, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
         { room: 3, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
-        { room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },        { room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
+        { room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },
+        { room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
+        { room: 1, start: new Date(2024, 1, 8), end: new Date(2024, 1, 10) },
       ],
     };
   },
@@ -267,6 +283,12 @@ export default {
       }
       return calEvents;
     },
+    getDayCaption() {
+      let desktop = window.matchMedia("(min-width: 768px)");
+
+      if (desktop.matches) return this.weekdays;
+      else return this.weekdaysAbbr;
+    },
   },
 };
 </script>
@@ -278,7 +300,11 @@ export default {
   grid-template-columns: repeat(14, 1fr);
   grid-row: 100%;
   grid-template-rows: repeat(3, 1fr);
-  height: 90px;
+  height: 50px;
+}
+span {
+  display: inline-block;
+  padding-left: 15px;
 }
 table,
 th,
@@ -287,7 +313,6 @@ td {
   padding-right: 0px;
 }
 table {
-  width: 50%;
   padding-left: 0px;
   padding-right: 0px;
   border-collapse: collapse;
@@ -296,7 +321,7 @@ table {
 }
 th,
 td {
-  width: 150px;
+  width: 1/7 * 100%;
 }
 th {
   height: 30px;
@@ -306,7 +331,7 @@ td {
   border-collapse: collapse;
   border-color: grey;
   border-width: 1px;
-  font-size: 30px;
+  font-size: 17px;
   margin: 0%;
   padding: 0%;
 }
@@ -355,5 +380,27 @@ td {
 }
 .weekTd {
   width: 1/7;
+}
+#prevMonth {
+  width: 40px;
+  height: 40px;
+}
+@media only screen and (min-width: 768px) {
+td {
+  border-style: solid;
+  border-collapse: collapse;
+  border-color: grey;
+  border-width: 1px;
+  font-size: 30px;
+  margin: 0%;
+  padding: 0%;
+}
+ .wrapper {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  grid-row: 100%;
+  grid-template-rows: repeat(3, 1fr);
+  height: 90px;
+}
 }
 </style>
