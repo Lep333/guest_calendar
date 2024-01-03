@@ -3,7 +3,7 @@
     <table>
       <caption class="monthCaption">
         {{
-          this.months[this.currMonth]
+          this.months[new Date(this.currYear, this.currMonth).getMonth()]
         }}
       </caption>
       <tr>
@@ -102,7 +102,7 @@ export default {
         { room: 1, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
         { room: 2, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
         { room: 3, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
-        { room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },
+        { room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },        { room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
       ],
     };
   },
@@ -224,80 +224,44 @@ export default {
       let calEvents = [];
       let calObj;
 
-      for (let [index, week] of this.getDays.entries()) {
-        if (!calEvents[index]) calEvents[index] = [];
-        for (let day of week) {
-          for (let event of this.events) {
-            if (this.equalDay(event.start, day)) {
-              console.log(event);
-              let remainingDays = event.end.getDate() - event.start.getDate();
-              let currStartDay = event.start;
-              let weekOffset = 0;
-              let startEv = true;
+      let firstCalMonth = this.getDays[0][0];
+      let lastCalMonth = this.getDays[this.getDays.length -1][6];
 
-              while (remainingDays > 0) {
-                if (!calEvents[index + weekOffset])
-                  calEvents[index + weekOffset] = [];
-                let startslotOffset = weekOffset > 0 ? 0 : 1;
-                if (
-                  this.dayToActualCalendarDay(currStartDay) >
-                    this.dayToActualCalendarDay(event.end) ||
-                  event.end.getDate() - currStartDay.getDate() > 7
-                ) {
-                  let lastDayOfWeek = 6;
-                  let fullDaysThisWeek =
-                    this.dayToActualCalendarDay(week[lastDayOfWeek]) -
-                    this.dayToActualCalendarDay(currStartDay);
-                  calObj = {
-                    room: event.room,
-                    startWeek: index + weekOffset,
-                    startSlot:
-                      this.dayToActualCalendarDay(currStartDay) * 2 +
-                      startslotOffset +
-                      1,
-                    duration:
-                      fullDaysThisWeek * 2 +
-                      this.dayToActualCalendarDay(currStartDay) * 2 +
-                      startslotOffset +
-                      2,
-                    start: startEv,
-                    end: false,
-                  };
-                  calEvents[index + weekOffset].push(calObj);
-                  remainingDays -= fullDaysThisWeek;
-                  startEv = false;
-                  weekOffset++;
-                  currStartDay = new Date(
-                    this.currYear,
-                    this.currMonth,
-                    this.getDays[index + 1][0].getDate()
-                  );
-                } else {
-                  let startEndSlot = weekOffset > 0 ? 1 : 0;
-                  let stayLength =
-                    (event.end.getDate() - currStartDay.getDate()) * 2 +
-                    startEndSlot;
-                  console.log(startEndSlot);
-                  calObj = {
-                    room: event.room,
-                    startWeek: index + weekOffset,
-                    startSlot:
-                      this.dayToActualCalendarDay(currStartDay) * 2 +
-                      startslotOffset +
-                      1,
-                    duration:
-                      stayLength +
-                      this.dayToActualCalendarDay(currStartDay) * 2 +
-                      startslotOffset +
-                      1,
-                    start: startEv,
-                    end: true,
-                  };
-                  calEvents[index + weekOffset].push(calObj);
-                  remainingDays = 0;
-                }
-              }
+      let events_this_month = this.events.filter((event) => (event.start <= lastCalMonth || event.end >= firstCalMonth));
+      
+      for (let event of events_this_month) {
+        for (let [index, week] of this.getDays.entries()) {
+          let startWeek = false;
+          if (!calEvents[index]) {
+            calEvents[index] = [];
+          }
+          
+          if (event.start <= week[6] && event.end >= week[0]) {
+            let startSlot;
+            let duration;
+            let endWeek;
+            if (event.start >= week[0] && event.start <= week[6]) {
+              startWeek = true;
+              startSlot = this.dayToActualCalendarDay(event.start) * 2 + 2;
+            } else {
+              startSlot = 1;
             }
+            if (event.end >= week[0] && event.end <= week[6]) {
+              endWeek = true;
+              duration = this.dayToActualCalendarDay(event.end) * 2 + 2;
+            } else {
+              endWeek = false;
+              duration = 15;
+            }
+            calObj = { 
+              room: event.room,
+              startWeek: index,
+              startSlot: startSlot,
+              duration: duration,
+              start: startWeek,
+              end: endWeek,
+            };
+            calEvents[index].push(calObj);
           }
         }
       }
