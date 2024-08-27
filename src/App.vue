@@ -3,11 +3,11 @@
     <span>
           <span class="monthCaption">
         {{
-          this.months[new Date(this.currYear, this.currMonth).getMonth()]
+          new Date(this.currYear, this.currMonth).toLocaleString("default", {month: "long"})
         }}
         </span>
-        <span @click="this.currMonth--"><div id="prevMonth">&lt;</div></span>
-        <span @click="this.currMonth++">&gt;</span>
+        <span id="prevMonth" @click="this.currMonth--">&lt;</span>
+        <span id="nextMonth" @click="this.currMonth++">&gt;</span>
       </span>
     <table>
       <tr>
