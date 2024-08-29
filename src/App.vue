@@ -1,14 +1,6 @@
 <template>
   <div class="hello">
-    <span>
-          <span class="monthCaption">
-        {{
-          new Date(this.currYear, this.currMonth).toLocaleString("default", {month: "long"})
-        }}
-        </span>
-        <span id="prevMonth" @click="this.currMonth--">&lt;</span>
-        <span id="nextMonth" @click="this.currMonth++">&gt;</span>
-      </span>
+    <TimeLabel @prev-month="currMonth--" @next-month="currMonth++" :month="currMonth" :year="currYear"></TimeLabel>
     <table>
       <tr>
         <th
@@ -65,7 +57,10 @@
 </template>
 
 <script>
+import TimeLabel from './components/TimeLabel.vue';
+
 export default {
+  components: { TimeLabel },
   name: "HelloWorld",
   data() {
     return {
