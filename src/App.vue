@@ -1,16 +1,47 @@
 <template>
   <div class="hello">
     <TimeLabel @prev-month="currMonth--" @next-month="currMonth++" :month="currMonth" :year="currYear"></TimeLabel>
+    <div class="wrapperNew">
+      <div
+          v-for="(weekday, index) in 7"
+          :key="weekday"
+          :class="
+            String(this.getDays[0][weekday - 1].toLocaleString('en-GB', {weekday: 'long'}))
+          "
+          class="weekdayCaption"
+          :style="{'--start': index * 2 + 1, '--end': index * 2 + 3, '--row': 1}"
+        >
+          {{ this.getDayCaption[weekday - 1] }}
+      </div>
+      <div
+          v-for="(weekday, index) in this.getDaysNew"
+          :key="weekday"
+          class="dateCaption weekdayCaption weekTd"
+          :class="String(weekday.toLocaleString('en-GB', {weekday: 'long'}))"
+          :style="{'--start': (index % 7) * 2 + 1, '--end': (index % 7) * 2 + 3, '--row': 2 + Math.floor(index / 7) * 4}"
+        >
+          {{ weekday.getDate() }}
+        </div>
+        <div
+          v-for="event in this.setCalEventsNew"
+          :key="event"
+          class="event"
+          :class="'room' + event.room"
+          :style="this.getEventStyleNew(event)"
+          >
+        </div>
+    </div>
+
     <table>
       <tr>
         <th
           v-for="weekday in 7"
           :key="weekday"
           :class="
-            String(this.weekdays[(weekday - 1 + this.startOfTheWeek) % 7])
+            String(this.getDays[0][weekday - 1].toLocaleString('en-GB', {weekday: 'long'}))
           "
         >
-          {{ this.getDayCaption[(weekday - 1 + this.startOfTheWeek) % 7] }}
+          {{ this.getDayCaption[weekday - 1] }}
         </th>
       </tr>
       <tr>
@@ -24,7 +55,7 @@
               <td
                 v-for="day of week"
                 :key="day"
-                :class="String(weekdays[day.getDay()])"
+                :class="String(day.toLocaleString('en-GB', {weekday: 'long'}))"
                 colspan="2"
                 class="weekTd"
               >
@@ -64,39 +95,6 @@ export default {
   name: "HelloWorld",
   data() {
     return {
-      weekdays: [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-      ],
-      weekdaysAbbr: [
-        "Sun",
-        "Mon",
-        "Tue",
-        "Wed",
-        "Thu",
-        "Wed",
-        "Fri",
-        "Sat"
-      ],
-      months: [
-        "January",
-        "Febuary",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ],
       currMonth: new Date().getMonth(),
       currYear: new Date().getFullYear(),
       startOfTheWeek: 1, // "Monday"
@@ -184,6 +182,15 @@ export default {
       }% 100%, 0% 100%)`;
       return `--start: ${event.startSlot}; --end: ${event.duration}; --row: ${event.room}; --poly: ${eventStyle}`;
     },
+    getEventStyleNew(event) {
+      let duration = event.duration - event.startSlot;
+      let eventStyle = `polygon(${
+        event.start ? (1 / (duration * 2)) * 100 : 0
+      }% 0%, 100% 0%, ${
+        event.end ? 100 - (1 / (duration * 2)) * 100 : 100
+      }% 100%, 0% 100%)`;
+      return `--start: ${event.startSlot}; --end: ${event.duration}; --row: ${(2 + event.room) + event.startWeek * 4 }; --poly: ${eventStyle}`;
+    },
     getWeekOfDay(day) {
       for (let [weekNo, week] of this.getDays.entries()) {
         for (let sameDay of week) {
@@ -215,6 +222,21 @@ export default {
           );
           dayOffset++;
         }
+      }
+      return weeks;
+    },
+    getDaysNew() {
+      let weeks = [];
+      let daysBeforeMonth =
+        Math.abs(this.currStartOfTheMonth.getDay() - this.startOfTheWeek + 7) %
+        7;
+
+      let dayOffset = -daysBeforeMonth;
+
+      for (let index = 0; index < this.getDaysToShow; index++) {
+        weeks.push(
+            new Date(this.currYear, this.currMonth, 1 + dayOffset + index)
+          );
       }
       return weeks;
     },
@@ -278,11 +300,59 @@ export default {
       }
       return calEvents;
     },
+    setCalEventsNew() {
+      let calEvents = [];
+      let calObj;
+
+      let firstCalMonth = this.getDays[0][0];
+      let lastCalMonth = this.getDays[this.getDays.length -1][6];
+
+      let events_this_month = this.events.filter((event) => (event.start <= lastCalMonth || event.end >= firstCalMonth));
+      
+      for (let event of events_this_month) {
+        for (let [index, week] of this.getDays.entries()) {
+          let startWeek = false;
+          
+          if (event.start <= week[6] && event.end >= week[0]) {
+            let startSlot;
+            let duration;
+            let endWeek;
+            if (event.start >= week[0] && event.start <= week[6]) {
+              startWeek = true;
+              startSlot = this.dayToActualCalendarDay(event.start) * 2 + 2;
+            } else {
+              startSlot = 1;
+            }
+            if (event.end >= week[0] && event.end <= week[6]) {
+              endWeek = true;
+              duration = this.dayToActualCalendarDay(event.end) * 2 + 2;
+            } else {
+              endWeek = false;
+              duration = 15;
+            }
+            calObj = { 
+              room: event.room,
+              startWeek: index,
+              startSlot: startSlot,
+              duration: duration,
+              start: startWeek,
+              end: endWeek,
+            };
+            calEvents.push(calObj);
+          }
+        }
+      }
+      return calEvents;
+    },
     getDayCaption() {
       let desktop = window.matchMedia("(min-width: 768px)");
 
-      if (desktop.matches) return this.weekdays;
-      else return this.weekdaysAbbr;
+      let option = desktop.matches? "long": "short";
+      let weekdayCaptions = []
+      for (let day of this.getDays[0]) {
+        weekdayCaptions.push(day.toLocaleString("default", {weekday: option}));
+      }
+      return weekdayCaptions;
     },
   },
 };
@@ -296,6 +366,13 @@ export default {
   grid-row: 100%;
   grid-template-rows: repeat(3, 1fr);
   height: 50px;
+}
+.wrapperNew {
+  display: grid;
+  grid-template-columns: repeat(14, 1fr);
+  grid-row: 100%;
+  grid-template-rows: repeat(21, 1fr);
+  height: 750px;
 }
 span {
   display: inline-block;
@@ -356,6 +433,15 @@ td {
   text-align: center;
   font-size: 30px;
   height: 50px;
+}
+.weekdayCaption {
+  grid-column-start: var(--start);
+  grid-column-end: var(--end);
+  grid-row: var(--row);
+  text-align: center;
+  font-weight: bold;
+  border: black;
+  border-style: solid;
 }
 .Saturday,
 .Sunday {
