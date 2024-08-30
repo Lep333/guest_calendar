@@ -25,31 +25,32 @@ export default {
 
 <style>
 .monthCaption{
-    font-size: 5rem;
+    font-size: 8vw;
     padding-left: 1rem;
     padding-right: 1rem;
-    width: 30rem;
+    width: 65vw;
 }
 
 .yearCaption{
-    font-size: 5rem;
-    padding-left: 1rem;
+    font-size: 8vw;
+    padding-left: 5rem;
     padding-right: 1rem;
-    width: 13rem;
+    width: 25vw;
+    height: 100%;
     display: inline-block;
     background-color: black;
     color: white;
 }
 
 .monthButton {
-    width: 4rem;
+    width: 10vw;
     height: 100%;
     background-color: blue;
     display: inline-block;
 }
 
 #root {
-    height: 6rem;
+    height: 12vw;
     display: flex;
     align-items: center;
 }

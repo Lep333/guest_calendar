@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <TimeLabel @prev-month="currMonth--" @next-month="currMonth++" :month="currMonth" :year="currYear"></TimeLabel>
-    <div class="wrapperNew">
+    <div class="wrapperNew" :style="{'--no-rows': (this.getDaysToShow / 7) * 4 + 1}">
       <div
           v-for="(weekday, index) in 7"
           :key="weekday"
@@ -16,8 +16,11 @@
       <div
           v-for="(weekday, index) in this.getDaysNew"
           :key="weekday"
-          class="dateCaption weekdayCaption weekTd"
-          :class="String(weekday.toLocaleString('en-GB', {weekday: 'long'}))"
+          class="dateCaption dayCaption weekTd"
+          :class="[
+            weekday.toLocaleString('en-GB', { weekday: 'long' }),
+            weekday.getMonth() === currMonth ? 'currentMonth' : ''
+          ]"
           :style="{'--start': (index % 7) * 2 + 1, '--end': (index % 7) * 2 + 3, '--row': 2 + Math.floor(index / 7) * 4}"
         >
           {{ weekday.getDate() }}
@@ -371,8 +374,8 @@ export default {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   grid-row: 100%;
-  grid-template-rows: repeat(21, 1fr);
-  height: 750px;
+  grid-template-rows: repeat(var(--no-rows), 1fr);
+  height: 100%;
 }
 span {
   display: inline-block;
@@ -435,13 +438,30 @@ td {
   height: 50px;
 }
 .weekdayCaption {
+  display: flex;
   grid-column-start: var(--start);
   grid-column-end: var(--end);
   grid-row: var(--row);
   text-align: center;
   font-weight: bold;
-  border: black;
+  border: 1px;
   border-style: solid;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+}
+.dayCaption {
+  display: flex;
+  grid-column-start: var(--start);
+  grid-column-end: var(--end);
+  grid-row: var(--row);
+  text-align: left;
+  border: 1px black;
+  border-style: solid;
+  box-sizing: border-box;
+  padding-left: 3px;
+  font-size: 20px;
+  align-items: center;
 }
 .Saturday,
 .Sunday {
