@@ -228,12 +228,19 @@ span {
   grid-column-end: var(--end);
   grid-row: var(--row);
   text-align: center;
-  font-weight: bold;
-  border: 1px;
+  font-weight: bold;;
+  border-top: 1px;
+  border-left: 1px;
+  border-right: 0px;
+  border-bottom: 0px;
   border-style: solid;
   box-sizing: border-box;
   align-items: center;
   justify-content: center;
+}
+.weekdayCaption:nth-child(7n) {
+  border-bottom: none;
+  border-right: 1px solid black;
 }
 .dayCaption {
   display: flex;
@@ -241,12 +248,18 @@ span {
   grid-column-end: var(--end);
   grid-row: var(--row);
   text-align: left;
-  border: 1px black;
+  border-top: 1px black;
+  border-left: 1px black;
+  border-right: 0px black;
+  border-bottom: 1px black;
   border-style: solid;
   box-sizing: border-box;
   padding-left: 3px;
   font-size: 20px;
   align-items: center;
+}
+.dayCaption:nth-child(7n) {
+  border-right: 1px solid black;
 }
 .Saturday,
 .Sunday {
