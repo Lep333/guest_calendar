@@ -28,18 +28,20 @@ export default {
     font-size: 8vw;
     padding-left: 1rem;
     padding-right: 1rem;
-    width: 65vw;
+    width: 60vw;
 }
 
 .yearCaption{
     font-size: 8vw;
     padding-left: 5rem;
     padding-right: 1rem;
-    width: 25vw;
+    width: 20vw;
     height: 100%;
-    display: inline-block;
+    display: flex;
     background-color: black;
     color: white;
+    text-align: center;
+    align-items: center;
 }
 
 .monthButton {

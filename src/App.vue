@@ -11,7 +11,7 @@
           class="weekdayCaption"
           :style="{'--start': index * 2 + 1, '--end': index * 2 + 3, '--row': 1}"
         >
-          {{ this.getDayCaption[weekday - 1] }}
+          {{ this.weekdayCaptions[weekday - 1] }}
       </div>
       <div
           v-for="(weekday, index) in this.getDays"
@@ -47,6 +47,7 @@ export default {
     return {
       currMonth: new Date().getMonth(),
       currYear: new Date().getFullYear(),
+      weekdayCaptions: [],
       startOfTheWeek: 1, // "Monday"
       rooms: 3,
       events: [
@@ -69,6 +70,11 @@ export default {
   props: {
     msg: String,
   },
+  mounted() {
+    let desktop = window.matchMedia("(min-width: 768px)");
+    this.getDayCaption(desktop);
+    desktop.addEventListener("change", this.getDayCaption);
+  },
   methods: {
     dayToActualCalendarDay(day) {
       return (day.getDay() - this.startOfTheWeek + 7) % 7;
@@ -81,6 +87,19 @@ export default {
         event.end ? 100 - (1 / (duration * 2)) * 100 : 100
       }% 100%, 0% 100%)`;
       return `--start: ${event.startSlot}; --end: ${event.duration}; --row: ${(2 + event.room) + event.startWeek * 4 }; --poly: ${eventStyle}`;
+    },
+    getDayCaption() {
+      let desktop = window.matchMedia("(min-width: 768px)");
+
+      let option = desktop.matches? "long": "short";
+      let weekdayCaptions = []
+      let i = 0;
+      while (i < 7) {
+        let day = this.getDays[i]
+        weekdayCaptions.push(day.toLocaleString("default", {weekday: option}));
+        i++;
+      }
+      this.weekdayCaptions =  weekdayCaptions;
     },
   },
   computed: {
@@ -164,19 +183,6 @@ export default {
         }
       }
       return calEvents;
-    },
-    getDayCaption() {
-      let desktop = window.matchMedia("(min-width: 768px)");
-
-      let option = desktop.matches? "long": "short";
-      let weekdayCaptions = []
-      let i = 0;
-      while (i < 7) {
-        let day = this.getDays[i]
-        weekdayCaptions.push(day.toLocaleString("default", {weekday: option}));
-        i++;
-      }
-      return weekdayCaptions;
     },
   },
 };
