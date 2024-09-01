@@ -1,12 +1,12 @@
 <template>
   <div class="hello">
     <TimeLabel @prev-month="currMonth--" @next-month="currMonth++" :month="currMonth" :year="currYear"></TimeLabel>
-    <div class="wrapperNew" :style="{'--no-rows': (this.getDaysToShow / 7) * 4 + 1}">
+    <div class="wrapper" :style="{'--no-rows': (this.getDaysToShow / 7) * 4 + 1}">
       <div
           v-for="(weekday, index) in 7"
           :key="weekday"
           :class="
-            String(this.getDays[0][weekday - 1].toLocaleString('en-GB', {weekday: 'long'}))
+            String(this.getDays[weekday - 1].toLocaleString('en-GB', {weekday: 'long'}))
           "
           class="weekdayCaption"
           :style="{'--start': index * 2 + 1, '--end': index * 2 + 3, '--row': 1}"
@@ -14,7 +14,7 @@
           {{ this.getDayCaption[weekday - 1] }}
       </div>
       <div
-          v-for="(weekday, index) in this.getDaysNew"
+          v-for="(weekday, index) in this.getDays"
           :key="weekday"
           class="dateCaption dayCaption weekTd"
           :class="[
@@ -26,67 +26,14 @@
           {{ weekday.getDate() }}
         </div>
         <div
-          v-for="event in this.setCalEventsNew"
+          v-for="event in this.setCalEvents"
           :key="event"
           class="event"
           :class="'room' + event.room"
-          :style="this.getEventStyleNew(event)"
+          :style="this.getEventStyle(event)"
           >
         </div>
     </div>
-
-    <table>
-      <tr>
-        <th
-          v-for="weekday in 7"
-          :key="weekday"
-          :class="
-            String(this.getDays[0][weekday - 1].toLocaleString('en-GB', {weekday: 'long'}))
-          "
-        >
-          {{ this.getDayCaption[weekday - 1] }}
-        </th>
-      </tr>
-      <tr>
-        <td colspan="7">
-          <table
-            v-for="(week, weekNo) in this.getDays"
-            :key="week"
-            class="weekTable"
-          >
-            <tr>
-              <td
-                v-for="day of week"
-                :key="day"
-                :class="String(day.toLocaleString('en-GB', {weekday: 'long'}))"
-                colspan="2"
-                class="weekTd"
-              >
-                <div
-                  class="dateCaption"
-                  :class="{ currentMonth: day.getMonth() == this.currMonth }"
-                >
-                  {{ day.getDate() }}
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td colspan="14">
-                <div class="wrapper">
-                  <div
-                    v-for="event in this.setCalEvents[weekNo]"
-                    :key="event"
-                    class="event"
-                    :class="'room' + event.room"
-                    :style="this.getEventStyle(event)"
-                  ></div>
-                </div>
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
   </div>
 </template>
 
@@ -115,6 +62,7 @@ export default {
         { room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },
         { room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
         { room: 1, start: new Date(2024, 1, 8), end: new Date(2024, 1, 10) },
+        { room: 1, start: new Date(2024, 8, 8), end: new Date(2024, 8, 10) },
       ],
     };
   },
@@ -122,57 +70,6 @@ export default {
     msg: String,
   },
   methods: {
-    setDayCaptionClass(day) {
-      return `${day.getDate()}.${day.getMonth()}`;
-    },
-    dayStartsEvent(slot, slotNo, currWeek) {
-      let startsEvent = false;
-      let duringEvent = false;
-      let endsEvent = false;
-      let cssClasses = false;
-      let day = currWeek[0] + Math.floor(slotNo / 7);
-
-      for (let event of this.events) {
-        if (slot == event.slot) {
-          if (this.equalDay(event.start, day)) {
-            startsEvent = true;
-            break;
-          } else if (this.equalDay(event.end, day)) {
-            endsEvent = true;
-            break;
-          } else if (
-            event.start.getTime() < day.getTime() &&
-            day.getTime() < event.end.getTime()
-          ) {
-            duringEvent = true;
-            break;
-          }
-        }
-      }
-
-      if (slot == "north") {
-        cssClasses = {
-          north: startsEvent || duringEvent || endsEvent,
-          start: startsEvent,
-          end: endsEvent,
-        };
-      } else if (slot == "south") {
-        cssClasses = {
-          south: startsEvent || duringEvent || endsEvent,
-          start: startsEvent,
-          end: endsEvent,
-        };
-      }
-
-      return cssClasses;
-    },
-    equalDay(day1, day2) {
-      return day1.getFullYear() == day2.getFullYear() &&
-        day1.getMonth() == day2.getMonth() &&
-        day1.getDate() == day2.getDate()
-        ? true
-        : false;
-    },
     dayToActualCalendarDay(day) {
       return (day.getDay() - this.startOfTheWeek + 7) % 7;
     },
@@ -183,25 +80,7 @@ export default {
       }% 0%, 100% 0%, ${
         event.end ? 100 - (1 / (duration * 2)) * 100 : 100
       }% 100%, 0% 100%)`;
-      return `--start: ${event.startSlot}; --end: ${event.duration}; --row: ${event.room}; --poly: ${eventStyle}`;
-    },
-    getEventStyleNew(event) {
-      let duration = event.duration - event.startSlot;
-      let eventStyle = `polygon(${
-        event.start ? (1 / (duration * 2)) * 100 : 0
-      }% 0%, 100% 0%, ${
-        event.end ? 100 - (1 / (duration * 2)) * 100 : 100
-      }% 100%, 0% 100%)`;
       return `--start: ${event.startSlot}; --end: ${event.duration}; --row: ${(2 + event.room) + event.startWeek * 4 }; --poly: ${eventStyle}`;
-    },
-    getWeekOfDay(day) {
-      for (let [weekNo, week] of this.getDays.entries()) {
-        for (let sameDay of week) {
-          if (this.equalDay(day, sameDay)) {
-            return weekNo;
-          }
-        }
-      }
     },
   },
   computed: {
@@ -209,26 +88,6 @@ export default {
       return new Date(this.currYear, this.currMonth, 1);
     },
     getDays() {
-      let numberOfWeeks = this.getDaysToShow / 7;
-      let weeks = [];
-      let daysBeforeMonth =
-        Math.abs(this.currStartOfTheMonth.getDay() - this.startOfTheWeek + 7) %
-        7;
-
-      let dayOffset = -daysBeforeMonth;
-
-      for (let week = 0; week < numberOfWeeks; week++) {
-        for (let day = 0; day < 7; day++) {
-          if (day == 0) weeks[week] = [];
-          weeks[week].push(
-            new Date(this.currYear, this.currMonth, 1 + dayOffset)
-          );
-          dayOffset++;
-        }
-      }
-      return weeks;
-    },
-    getDaysNew() {
       let weeks = [];
       let daysBeforeMonth =
         Math.abs(this.currStartOfTheMonth.getDay() - this.startOfTheWeek + 7) %
@@ -260,29 +119,30 @@ export default {
       let calEvents = [];
       let calObj;
 
-      let firstCalMonth = this.getDays[0][0];
-      let lastCalMonth = this.getDays[this.getDays.length -1][6];
+      let firstCalMonth = this.getDays[0];
+      let lastCalMonth = this.getDays[-1];
 
       let events_this_month = this.events.filter((event) => (event.start <= lastCalMonth || event.end >= firstCalMonth));
       
       for (let event of events_this_month) {
-        for (let [index, week] of this.getDays.entries()) {
-          let startWeek = false;
-          if (!calEvents[index]) {
-            calEvents[index] = [];
-          }
+        let i = 0;
+        while (i < 5) {
+          let startOfWeek = this.getDays[i * 7];
+          let endOfWeek = this.getDays[i * 7 + 6];
           
-          if (event.start <= week[6] && event.end >= week[0]) {
+          let startWeek = false;
+            
+          if (event.start <= endOfWeek && event.end >= startOfWeek) {
             let startSlot;
             let duration;
             let endWeek;
-            if (event.start >= week[0] && event.start <= week[6]) {
+            if (event.start >= startOfWeek && event.start <= endOfWeek) {
               startWeek = true;
               startSlot = this.dayToActualCalendarDay(event.start) * 2 + 2;
             } else {
               startSlot = 1;
             }
-            if (event.end >= week[0] && event.end <= week[6]) {
+            if (event.end >= startOfWeek && event.end <= endOfWeek) {
               endWeek = true;
               duration = this.dayToActualCalendarDay(event.end) * 2 + 2;
             } else {
@@ -291,51 +151,7 @@ export default {
             }
             calObj = { 
               room: event.room,
-              startWeek: index,
-              startSlot: startSlot,
-              duration: duration,
-              start: startWeek,
-              end: endWeek,
-            };
-            calEvents[index].push(calObj);
-          }
-        }
-      }
-      return calEvents;
-    },
-    setCalEventsNew() {
-      let calEvents = [];
-      let calObj;
-
-      let firstCalMonth = this.getDays[0][0];
-      let lastCalMonth = this.getDays[this.getDays.length -1][6];
-
-      let events_this_month = this.events.filter((event) => (event.start <= lastCalMonth || event.end >= firstCalMonth));
-      
-      for (let event of events_this_month) {
-        for (let [index, week] of this.getDays.entries()) {
-          let startWeek = false;
-          
-          if (event.start <= week[6] && event.end >= week[0]) {
-            let startSlot;
-            let duration;
-            let endWeek;
-            if (event.start >= week[0] && event.start <= week[6]) {
-              startWeek = true;
-              startSlot = this.dayToActualCalendarDay(event.start) * 2 + 2;
-            } else {
-              startSlot = 1;
-            }
-            if (event.end >= week[0] && event.end <= week[6]) {
-              endWeek = true;
-              duration = this.dayToActualCalendarDay(event.end) * 2 + 2;
-            } else {
-              endWeek = false;
-              duration = 15;
-            }
-            calObj = { 
-              room: event.room,
-              startWeek: index,
+              startWeek: i,
               startSlot: startSlot,
               duration: duration,
               start: startWeek,
@@ -343,6 +159,8 @@ export default {
             };
             calEvents.push(calObj);
           }
+
+          i++;
         }
       }
       return calEvents;
@@ -352,8 +170,11 @@ export default {
 
       let option = desktop.matches? "long": "short";
       let weekdayCaptions = []
-      for (let day of this.getDays[0]) {
+      let i = 0;
+      while (i < 7) {
+        let day = this.getDays[i]
         weekdayCaptions.push(day.toLocaleString("default", {weekday: option}));
+        i++;
       }
       return weekdayCaptions;
     },
@@ -367,48 +188,12 @@ export default {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   grid-row: 100%;
-  grid-template-rows: repeat(3, 1fr);
-  height: 50px;
-}
-.wrapperNew {
-  display: grid;
-  grid-template-columns: repeat(14, 1fr);
-  grid-row: 100%;
   grid-template-rows: repeat(var(--no-rows), 1fr);
   height: 100%;
 }
 span {
   display: inline-block;
   padding-left: 15px;
-}
-table,
-th,
-td {
-  padding-left: 0px;
-  padding-right: 0px;
-}
-table {
-  padding-left: 0px;
-  padding-right: 0px;
-  border-collapse: collapse;
-  border-style: solid;
-  border-width: 2px;
-}
-th,
-td {
-  width: 1/7 * 100%;
-}
-th {
-  height: 30px;
-}
-td {
-  border-style: solid;
-  border-collapse: collapse;
-  border-color: grey;
-  border-width: 1px;
-  font-size: 17px;
-  margin: 0%;
-  padding: 0%;
 }
 .currentMonth {
   font-weight: bold;
@@ -500,8 +285,8 @@ td {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   grid-row: 100%;
-  grid-template-rows: repeat(3, 1fr);
-  height: 90px;
+  grid-template-rows: repeat(var(--no-rows), 1fr);
+  height: 100%;
 }
 }
 </style>
