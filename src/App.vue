@@ -190,6 +190,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+* {
+  font-family: Arial, Helvetica, sans-serif;
+}
 .wrapper {
   display: grid;
   grid-template-columns: repeat(14, 1fr);

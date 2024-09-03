@@ -1,19 +1,17 @@
 <template>
     <div id="root">
-        <div id="prevMonth" class="monthButton" @click="$emit('prev-month')"></div>
+        <img id="prevMonth" class="monthButton" @click="$emit('prev-month')" src="../assets/arrow_left.svg" alt="Previous Month">
         <div class="monthCaption">
-        {{
-        new Date(year, month).toLocaleString("default", {month: "long"})
-        }}
+            {{
+            new Date(year, month).toLocaleString("default", {month: "long"})
+            }}
         </div>
         <div class="yearCaption">
-        {{
-        new Date(year, month).toLocaleString("default", {year: "numeric"})
-        }}
+            {{
+            new Date(year, month).toLocaleString("default", {year: "numeric"})
+            }}
         </div>
-        
-        
-        <div id="nextMonth" class="monthButton" @click="$emit('next-month')"></div>
+        <img id="nextMonth" class="monthButton" @click="$emit('next-month')" src="../assets/arrow_right.svg" alt="Next Month">
     </div>
 </template>
 
@@ -28,27 +26,28 @@ export default {
     font-size: 8vw;
     padding-left: 1rem;
     padding-right: 1rem;
-    width: 60vw;
+    width: 50vw;
+    min-width: fit-content;
 }
 
 .yearCaption{
     font-size: 8vw;
-    padding-left: 5rem;
-    padding-right: 1rem;
-    width: 20vw;
+    width: 40vw;
+    min-width: fit-content;
     height: 100%;
     display: flex;
     background-color: black;
     color: white;
     text-align: center;
     align-items: center;
+    justify-content: center;
 }
 
 .monthButton {
     width: 10vw;
     height: 100%;
-    background-color: blue;
     display: inline-block;
+    min-width: 10vw;
 }
 
 #root {
