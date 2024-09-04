@@ -42,7 +42,7 @@ import TimeLabel from './components/TimeLabel.vue';
 
 export default {
   components: { TimeLabel },
-  name: "HelloWorld",
+  name: "GuestCalendar",
   data() {
     return {
       currMonth: new Date().getMonth(),
@@ -63,12 +63,9 @@ export default {
         { room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },
         { room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
         { room: 1, start: new Date(2024, 1, 8), end: new Date(2024, 1, 10) },
-        { room: 1, start: new Date(2024, 8, 8), end: new Date(2024, 8, 10) },
+        { room: 1, start: new Date(2024, 7, 3), end: new Date(2024, 9, 10) },
       ],
     };
-  },
-  props: {
-    msg: String,
   },
   mounted() {
     let desktop = window.matchMedia("(min-width: 768px)");
@@ -155,13 +152,12 @@ export default {
       let calObj;
 
       let firstCalMonth = this.getDays[0];
-      let lastCalMonth = this.getDays[-1];
+      let lastCalMonth = this.getDays[this.getDays.length - 1];
 
       let events_this_month = this.events.filter((event) => (event.start <= lastCalMonth || event.end >= firstCalMonth));
       
       for (let event of events_this_month) {
-        let i = 0;
-        while (i < 5) {
+        for (let i = 0; i < this.getDays.length / 7; i++) {
           let startOfWeek = this.getDays[i * 7];
           let endOfWeek = this.getDays[i * 7 + 6];
           
@@ -194,8 +190,6 @@ export default {
             };
             calEvents.push(calObj);
           }
-
-          i++;
         }
       }
       return calEvents;

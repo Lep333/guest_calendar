@@ -93,4 +93,113 @@ describe("App.vue", () => {
         let daysInMonth = lastDayOfMonth.getDate();
         expect(boldCaptions.length).toBe(daysInMonth);
     })
+
+    test("event rendered correctly: starts before curr month ends in curr month", async () => {
+        const wrapper = mount(app);
+
+        let today = new Date();
+        let startDate = new Date(today.getFullYear(), today.getMonth() - 1);
+        let endDate = new Date(today.getFullYear(), today.getMonth());
+        wrapper.vm.events = [
+            { room: 1, start: startDate, end: endDate },
+        ];
+        await wrapper.vm.$nextTick();
+
+        let events = wrapper.findAll(".event");
+        let expected_no_of_events = 1;
+        expect(events.length).toBe(expected_no_of_events);
+    })
+
+    test("event rendered correctly: starts before curr month ends after curr month", async () => {
+        const wrapper = mount(app);
+
+        let today = new Date();
+        let startDate = new Date(today.getFullYear(), today.getMonth() - 1);
+        let endDate = new Date(today.getFullYear(), today.getMonth() + 1);
+        wrapper.vm.events = [
+            { room: 1, start: startDate, end: endDate },
+        ];
+        await wrapper.vm.$nextTick();
+
+        let events = wrapper.findAll(".event");
+        let expected_no_of_events = wrapper.vm.getDays.length / 7;
+        expect(events.length).toBe(expected_no_of_events);
+    })
+
+    test("event rendered correctly: starts curr month ends after curr month", async () => {
+        const wrapper = mount(app);
+
+        let today = new Date();
+        let startDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        let endDate = new Date(today.getFullYear(), today.getMonth() + 1);
+        wrapper.vm.events = [
+            { room: 1, start: startDate, end: endDate },
+        ];
+        await wrapper.vm.$nextTick();
+
+        let events = wrapper.findAll(".event");
+        let expected_no_of_events = 1;
+        expect(events.length).toBe(expected_no_of_events);
+    })
+
+    test("event rendered correctly: starts curr month ends curr month", async () => {
+        const wrapper = mount(app);
+
+        let today = new Date();
+        let startDate = wrapper.vm.getDays[7];
+        let endDate = wrapper.vm.getDays[13];
+        wrapper.vm.events = [
+            { room: 1, start: startDate, end: endDate },
+        ];
+        await wrapper.vm.$nextTick();
+
+        let events = wrapper.findAll(".event");
+        let expected_no_of_events = 1;
+        expect(events.length).toBe(expected_no_of_events);
+    })
+
+    test("event rendered correctly: starts curr month ends curr month; 2week long event", async () => {
+        const wrapper = mount(app);
+
+        let startDate = wrapper.vm.getDays[7];
+        let endDate = wrapper.vm.getDays[20];
+        wrapper.vm.events = [
+            { room: 1, start: startDate, end: endDate },
+        ];
+        await wrapper.vm.$nextTick();
+
+        let events = wrapper.findAll(".room1");
+        let expected_no_of_events = 2;
+        expect(events.length).toBe(expected_no_of_events);
+    })
+
+    test("event rendered correctly: room2", async () => {
+        const wrapper = mount(app);
+
+        let startDate = wrapper.vm.getDays[7];
+        let endDate = wrapper.vm.getDays[20];
+        wrapper.vm.events = [
+            { room: 2, start: startDate, end: endDate },
+        ];
+        await wrapper.vm.$nextTick();
+
+        let events = wrapper.findAll(".room2");
+        let expected_no_of_events = 2;
+        expect(events.length).toBe(expected_no_of_events);
+    })
+
+    test("event rendered correctly: room3", async () => {
+        const wrapper = mount(app);
+
+        let startDate = wrapper.vm.getDays[7];
+        let endDate = wrapper.vm.getDays[20];
+        wrapper.vm.events = [
+            { room: 3, start: startDate, end: endDate },
+        ];
+        await wrapper.vm.$nextTick();
+
+        let events = wrapper.findAll(".room3");
+        let expected_no_of_events = 2;
+        expect(events.length).toBe(expected_no_of_events);
+    })
 });
