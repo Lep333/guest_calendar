@@ -1,6 +1,6 @@
 <template>
   <div class="hello">
-    <TimeLabel @prev-month="currMonth--" @next-month="currMonth++" :month="currMonth" :year="currYear"></TimeLabel>
+    <TimeLabel @prev-month="goToLastMonth()" @next-month="goToNextMonth()" :month="currMonth" :year="currYear"></TimeLabel>
     <div class="wrapper" :style="{'--no-rows': (this.getDaysToShow / 7) * 4 + 1}">
       <div
           v-for="(weekday, index) in 7"
@@ -16,7 +16,7 @@
       <div
           v-for="(weekday, index) in this.getDays"
           :key="weekday"
-          class="dateCaption dayCaption weekTd"
+          class="dayCaption weekTd"
           :class="[
             weekday.toLocaleString('en-GB', { weekday: 'long' }),
             weekday.getMonth() === currMonth ? 'currentMonth' : ''
@@ -101,6 +101,22 @@ export default {
       }
       this.weekdayCaptions =  weekdayCaptions;
     },
+    goToLastMonth() {
+      if (this.currMonth == 0) {
+        this.currYear--;
+        this.currMonth = 11;
+      } else {
+        this.currMonth--;
+      }
+    }, 
+    goToNextMonth() {
+      if (this.currMonth == 11) {
+        this.currYear++;
+        this.currMonth = 0;
+      } else {
+        this.currMonth++;
+      }
+    }
   },
   computed: {
     currStartOfTheMonth() {
