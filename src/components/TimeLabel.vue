@@ -6,12 +6,13 @@
             new Date(year, month).toLocaleString("default", {month: "long"})
             }}
         </div>
+        <img id="nextMonth" class="monthButton" @click="$emit('next-month')" src="../assets/arrow_right.svg" alt="Next Month">
         <div class="yearCaption">
             {{
             new Date(year, month).toLocaleString("default", {year: "numeric"})
             }}
         </div>
-        <img id="nextMonth" class="monthButton" @click="$emit('next-month')" src="../assets/arrow_right.svg" alt="Next Month">
+        
     </div>
 </template>
 

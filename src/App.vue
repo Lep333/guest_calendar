@@ -31,9 +31,27 @@
           class="event"
           :class="'room' + event.room"
           :style="this.getEventStyle(event)"
+          @click="this.setSelectedEvent($event, event)"
           >
         </div>
-    </div>
+        <div v-if="this.selectedEvent" class="eventWindow" :style="{'--top': this.y + 'px', '--left': this.x + 'px'}">
+          <div>
+            <img id="imgClose" @click="this.selectedEvent = null" src="./assets/close.svg" alt="close">
+          </div>
+          <div id="eventDetail">
+            <table>
+              <tr v-for="(value, key) in this.printEvent()" :key="key">
+                <td>
+                  {{ key }}
+                </td>
+                <td>
+                  {{ value }}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
   </div>
 </template>
 
@@ -50,6 +68,9 @@ export default {
       weekdayCaptions: [],
       startOfTheWeek: 1, // "Monday"
       rooms: 3,
+      selectedEvent : null,
+      x: 0,
+      y: 0,
       events: [
         { room: 1, start: new Date(2023, 10, 15), end: new Date(2023, 10, 16) },
         {
@@ -62,8 +83,8 @@ export default {
         { room: 3, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
         { room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },
         { room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
-        { room: 1, start: new Date(2024, 1, 8), end: new Date(2024, 1, 10) },
-        { room: 1, start: new Date(2024, 7, 3), end: new Date(2024, 9, 10) },
+        { id: 2, room: 1, start: new Date(2024, 1, 8), end: new Date(2024, 1, 10) },
+        { id: 1, room: 1, prename: "Hier Könnte", name: "Ihr Name Stehen", start: new Date(2024, 8, 3), end: new Date(2024, 8, 10) },
       ],
     };
   },
@@ -73,6 +94,11 @@ export default {
     desktop.addEventListener("change", this.getDayCaption);
   },
   methods: {
+    setSelectedEvent(payload, e) {
+      this.selectedEvent = e;
+      this.x = payload.x;
+      this.y = payload.y;
+    },
     dayToActualCalendarDay(day) {
       return (day.getDay() - this.startOfTheWeek + 7) % 7;
     },
@@ -113,7 +139,32 @@ export default {
       } else {
         this.currMonth++;
       }
-    }
+    },
+    printEvent() {
+      if (this.selectedEvent == null)
+        return
+      let eventDetails = {};
+      let event = null;
+      const options = {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+      };
+      for (let el of this.events) {
+        if (this.selectedEvent.id == el.id) {
+          event = el;
+          break;
+        }
+      }
+      for (const key in event) {
+        if (typeof(event[key]) == typeof(new Date())) {
+          eventDetails[key] = `${event[key].toLocaleString(undefined, options)}`;
+        } else {
+          eventDetails[key] = `${event[key]}`;
+        }
+      }
+      return eventDetails;
+    },
   },
   computed: {
     currStartOfTheMonth() {
@@ -181,6 +232,7 @@ export default {
               duration = 15;
             }
             calObj = { 
+              id: event.id,
               room: event.room,
               startWeek: i,
               startSlot: startSlot,
@@ -303,16 +355,30 @@ span {
   width: 40px;
   height: 40px;
 }
-@media only screen and (min-width: 768px) {
-td {
-  border-style: solid;
-  border-collapse: collapse;
-  border-color: grey;
-  border-width: 1px;
-  font-size: 30px;
-  margin: 0%;
-  padding: 0%;
+.eventWindow {
+  border: 1px solid black;
+  position: absolute;
+  top: var(--top);
+  left: var(--left);
+  background-color: blue;
+  z-index: 1;
+  height: 30px;
+  width: 33vw;
 }
+#imgClose {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  height: 100%;
+}
+#eventDetail {
+  position: relative;
+  top: 31px;
+  z-index: 1;
+  background-color: white;
+  border: 1px solid black;
+}
+@media only screen and (min-width: 768px) {
  .wrapper {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
