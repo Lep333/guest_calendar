@@ -35,21 +35,15 @@
           >
         </div>
         <div v-if="this.selectedEvent" class="eventWindow" :style="{'--top': this.y + 'px', '--left': this.x + 'px'}">
-          <div>
-            <img id="imgClose" @click="this.selectedEvent = null" src="./assets/close.svg" alt="close">
-          </div>
-          <div id="eventDetail">
-            <table>
-              <tr v-for="(value, key) in this.printEvent()" :key="key">
-                <td>
-                  {{ key }}
-                </td>
-                <td>
-                  {{ value }}
-                </td>
-              </tr>
-            </table>
-          </div>
+          <img id="imgClose" @click="this.selectedEvent = null" src="./assets/close.svg" alt="close">
+          <template v-for="(value, key) in this.printEvent()" :key="key">
+            <div>
+              {{ key }}
+            </div>
+            <div>
+              {{ value }}
+            </div>
+          </template>
         </div>
       </div>
   </div>
@@ -72,19 +66,20 @@ export default {
       x: 0,
       y: 0,
       events: [
-        { room: 1, start: new Date(2023, 10, 15), end: new Date(2023, 10, 16) },
+        { id: 1, room: 1, start: new Date(2023, 10, 15), end: new Date(2023, 10, 16) },
         {
+          id: 2,
           room: 2,
           start: new Date(2023, 10, 23),
           end: new Date(2023, 10, 28),
         },
-        { room: 1, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
-        { room: 2, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
-        { room: 3, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
-        { room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },
-        { room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
-        { id: 2, room: 1, start: new Date(2024, 1, 8), end: new Date(2024, 1, 10) },
-        { id: 1, room: 1, prename: "Hier Könnte", name: "Ihr Name Stehen", start: new Date(2024, 8, 3), end: new Date(2024, 8, 10) },
+        { id: 3, room: 1, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
+        { id: 4, room: 2, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
+        { id: 5, room: 3, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
+        { id: 6, room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },
+        { id: 7, room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
+        { id: 8, room: 1, start: new Date(2024, 1, 8), end: new Date(2024, 1, 10) },
+        { id: 9, room: 1, prename: "Hier Könnte", name: "Ihr Name Stehen", start: new Date(2024, 8, 3), end: new Date(2024, 8, 10) },
       ],
     };
   },
@@ -96,6 +91,13 @@ export default {
   methods: {
     setSelectedEvent(payload, e) {
       this.selectedEvent = e;
+      if (payload.x + 0.33 * window.innerWidth > window.innerWidth) {
+        // TODO: set right position instead of left?
+        // --> build style string here?
+        this.x = (payload.x - (payload.x + 0.33 * window.innerWidth - window.innerWidth)) / window.innerWidth * 100;
+      } else {
+        this.x = payload.x / window.innerWidth * 100;
+      }
       this.x = payload.x;
       this.y = payload.y;
     },
@@ -356,27 +358,26 @@ span {
   height: 40px;
 }
 .eventWindow {
-  border: 1px solid black;
   position: absolute;
   top: var(--top);
   left: var(--left);
-  background-color: blue;
+  background-color: #EADA73;
   z-index: 1;
-  height: 30px;
-  width: 33vw;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5vh;
+  padding: 2vw;
+  font-size: large;
+  border-radius: 2%;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 #imgClose {
   position: absolute;
   top: 0px;
   right: 0px;
   height: 100%;
-}
-#eventDetail {
-  position: relative;
-  top: 31px;
-  z-index: 1;
-  background-color: white;
-  border: 1px solid black;
+  width: max(40px, 3vw);
+  height: max(40px, 3vw);
 }
 @media only screen and (min-width: 768px) {
  .wrapper {
@@ -385,6 +386,29 @@ span {
   grid-row: 100%;
   grid-template-rows: repeat(var(--no-rows), 1fr);
   height: 100%;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .eventWindow {
+    margin-left: 2vw;
+    margin-right: 2vw;
+    position: absolute;
+    top: var(--top);
+    left: 0px;
+    z-index: 1;
+    padding: 2vw;
+    width: 91.8vw;
+    font-size: large;
+    border-radius: 10px;
+  }
+  #imgClose {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  height: 100%;
+  width: max(40px, 4vw);
+  height: max(40px, 4vw);
 }
 }
 </style>
