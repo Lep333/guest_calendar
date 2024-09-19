@@ -37,10 +37,10 @@
         <div v-if="this.selectedEvent" class="eventWindow" :style="{'--top': this.y + 'px', '--left': this.x + 'px'}">
           <img id="imgClose" @click="this.selectedEvent = null" src="./assets/close.svg" alt="close">
           <template v-for="(value, key) in this.printEvent()" :key="key">
-            <div>
+            <div class="eventDetail">
               {{ key }}
             </div>
-            <div>
+            <div class="eventDetail">
               {{ value }}
             </div>
           </template>
@@ -361,7 +361,7 @@ span {
   position: absolute;
   top: var(--top);
   left: var(--left);
-  background-color: #EADA73;
+  background-color: white;
   z-index: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -376,8 +376,8 @@ span {
   top: 0px;
   right: 0px;
   height: 100%;
-  width: max(40px, 3vw);
-  height: max(40px, 3vw);
+  width: max(40px, 2vw);
+  height: max(40px, 2vw);
 }
 @media only screen and (min-width: 768px) {
  .wrapper {

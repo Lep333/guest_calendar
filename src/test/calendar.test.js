@@ -1,6 +1,7 @@
 import { mount } from "@vue/test-utils";
 import app from "../App.vue";
 import { describe, expect, test } from "vitest";
+import { end } from "happy-dom/lib/PropertySymbol.js";
 
 
 describe("App.vue", () => {
@@ -201,5 +202,39 @@ describe("App.vue", () => {
         let events = wrapper.findAll(".room3");
         let expected_no_of_events = 2;
         expect(events.length).toBe(expected_no_of_events);
+    })
+
+    test("event detail windows opens and closes. Also correct details info is shown", async () => {
+        const wrapper = mount(app);
+
+        let startDate = wrapper.vm.getDays[7];
+        let endDate = wrapper.vm.getDays[20];
+        const options = {
+            year: 'numeric',
+            month: 'numeric',
+            day: 'numeric',
+        };
+        wrapper.vm.events = [
+            { room: 3, start: startDate, end: endDate },
+        ];
+        await wrapper.vm.$nextTick();
+
+        expect(wrapper.find(".eventWindow").exists()).toBe(false);
+        await wrapper.find(".event").trigger("click");
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find(".eventWindow").exists()).toBe(true);
+
+        let details = wrapper.findAll(".eventDetail");
+        expect(details.length).toBe(6);
+        expect(details[0].text()).toBe("room");
+        expect(details[1].text()).toBe("3");
+        expect(details[2].text()).toBe("start");
+        expect(details[3].text()).toBe(startDate.toLocaleString(undefined, options));
+        expect(details[4].text()).toBe("end");
+        expect(details[5].text()).toBe(endDate.toLocaleString(undefined, options));
+
+        await wrapper.find("#imgClose").trigger("click");
+        await wrapper.vm.$nextTick();
+        expect(wrapper.find(".eventWindow").exists()).toBe(false);
     })
 });
