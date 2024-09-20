@@ -34,7 +34,7 @@
           @click="this.setSelectedEvent($event, event)"
           >
         </div>
-        <div v-if="this.selectedEvent" class="eventWindow" :style="{'--top': this.y + 'px', '--left': this.x + 'px'}">
+        <div v-if="this.selectedEvent" ref="eventWindow" class="eventWindow" :style="{'--top': this.y + 'px', '--left': this.x + 'px'}">
           <img id="imgClose" @click="this.selectedEvent = null" src="./assets/close.svg" alt="close">
           <template v-for="(value, key) in this.printEvent()" :key="key">
             <div class="eventDetail">
@@ -50,6 +50,7 @@
 </template>
 
 <script>
+import { nextTick } from 'vue';
 import TimeLabel from './components/TimeLabel.vue';
 
 export default {
@@ -91,15 +92,21 @@ export default {
   methods: {
     setSelectedEvent(payload, e) {
       this.selectedEvent = e;
-      if (payload.x + 0.33 * window.innerWidth > window.innerWidth) {
-        // TODO: set right position instead of left?
-        // --> build style string here?
-        this.x = (payload.x - (payload.x + 0.33 * window.innerWidth - window.innerWidth)) / window.innerWidth * 100;
-      } else {
-        this.x = payload.x / window.innerWidth * 100;
-      }
-      this.x = payload.x;
-      this.y = payload.y;
+      this.x = payload.x + window.scrollX;
+      this.y = payload.y + window.scrollY;
+
+      nextTick(() => {
+        const el = this.$refs.eventWindow;
+        const rect = el.getBoundingClientRect();
+        const viewportX = window.innerWidth;
+        const viewportY = window.innerHeight;
+        if (rect.right > viewportX) {
+          this.x = this.x - (rect.right - rect.left);
+        }
+        if (rect.bottom > viewportY) {
+          this.y = this.y - (rect.bottom - rect.top);
+        }
+      })
     },
     dayToActualCalendarDay(day) {
       return (day.getDay() - this.startOfTheWeek + 7) % 7;
@@ -361,6 +368,7 @@ span {
   position: absolute;
   top: var(--top);
   left: var(--left);
+  right: var(--right);
   background-color: white;
   z-index: 1;
   display: grid;
