@@ -1,18 +1,19 @@
 <template>
     <div id="root">
-        <img id="prevMonth" class="monthButton" @click="$emit('prev-month')" src="../assets/arrow_left.svg" alt="Previous Month">
-        <div class="monthCaption">
-            {{
-            new Date(year, month).toLocaleString("default", {month: "long"})
-            }}
+        <div id="month">
+            <img id="prevMonth" class="monthButton" @click="$emit('prev-month')" src="../assets/arrow_left.svg" alt="Previous Month">
+            <div class="monthCaption">
+                {{
+                new Date(year, month).toLocaleString("default", {month: "long"})
+                }}
+            </div>
+            <img id="nextMonth" class="monthButton" @click="$emit('next-month')" src="../assets/arrow_right.svg" alt="Next Month">
         </div>
-        <img id="nextMonth" class="monthButton" @click="$emit('next-month')" src="../assets/arrow_right.svg" alt="Next Month">
         <div class="yearCaption">
             {{
             new Date(year, month).toLocaleString("default", {year: "numeric"})
             }}
         </div>
-        
     </div>
 </template>
 
@@ -27,13 +28,13 @@ export default {
     font-size: 8vw;
     padding-left: 1rem;
     padding-right: 1rem;
-    width: 50vw;
     min-width: fit-content;
+    justify-content: center;
+    text-align: center;
 }
 
 .yearCaption{
     font-size: 8vw;
-    width: 40vw;
     min-width: fit-content;
     height: 100%;
     display: flex;
@@ -53,7 +54,14 @@ export default {
 
 #root {
     height: 12vw;
-    display: flex;
+    display: grid;
+    grid-template-columns: 5fr 2fr;
+}
+
+#month {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
     align-items: center;
+    justify-content: center;
 }
 </style>
