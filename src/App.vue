@@ -196,8 +196,7 @@ export default {
     },
     getDaysToShow() {
       let daysBeforeMonth =
-        Math.abs(7 - this.currStartOfTheMonth.getDay() - this.startOfTheWeek) %
-        7;
+        Math.abs(7 + (this.currStartOfTheMonth.getDay() - this.startOfTheWeek)) % 7;
       let daysTillEndOfMonth = new Date(
         this.currYear,
         this.currMonth + 1,
