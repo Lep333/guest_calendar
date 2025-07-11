@@ -9,17 +9,48 @@
             </div>
             <img id="nextMonth" class="monthButton" @click="$emit('next-month')" src="../assets/arrow_right.svg" alt="Next Month">
         </div>
-        <div class="yearCaption">
-            {{
-            new Date(year, month).toLocaleString("default", {year: "numeric"})
-            }}
+        <div id="yearParent">
+            <div @click="showYearSelector=true" ref="yearLabel" class="yearCaption">
+                {{
+                new Date(year, month).toLocaleString("default", {year: "numeric"})
+                }}
+            </div>
+            <YearSelector v-if="showYearSelector" id="yearSelector" :year="this.year"></YearSelector>
         </div>
     </div>
 </template>
 
 <script>
+import YearSelector from './YearSelector.vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+
 export default {
-    props: ['month', "year"],
+    components: { YearSelector },
+    props: ["month", "year"],
+    emits: ["prev-month", "next-month"],
+    setup() {
+        const showYearSelector = ref(false);
+        const yearLabel = ref(null);
+
+        function handleClick(event) {
+            if (yearLabel.value && !yearLabel.value.contains(event.target)) {
+                showYearSelector.value = false;
+            }
+        }
+
+        onMounted(() => {
+            document.addEventListener('click', handleClick);
+        });
+
+        onBeforeUnmount(() => {
+            document.removeEventListener('click', handleClick);
+        });
+
+        return {
+            showYearSelector,
+            yearLabel,
+        }
+    },
 }
 </script>
 
@@ -63,5 +94,29 @@ export default {
     grid-template-columns: 1fr 3fr 1fr;
     align-items: center;
     justify-content: center;
+}
+
+#yearSelector {
+    position: absolute;
+    top: 100%;
+    right: 0rem;
+    height: 100%;
+    width: 100%;
+    font-size: 2vw;
+}
+
+#yearParent {
+    position: relative;
+}
+
+@media only screen and (max-width: 768px) {
+    #yearSelector {
+        position: absolute;
+        top: 100%;
+        right: 0rem;
+        height: 150%;
+        width: 100vw;
+        font-size: 3vw;
+    }
 }
 </style>

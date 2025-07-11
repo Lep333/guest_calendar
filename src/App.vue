@@ -51,15 +51,26 @@
 
 <script>
 import { nextTick } from 'vue';
+import { ref, provide } from 'vue';
 import TimeLabel from './components/TimeLabel.vue';
 
 export default {
   components: { TimeLabel },
   name: "GuestCalendar",
+  setup() {
+    let currYear = ref(new Date().getFullYear());
+
+    function changeYear(year) {
+      console.log(year);
+      currYear.value = year;
+    }
+
+    provide("set-year", changeYear);
+    return { currYear };
+  },
   data() {
     return {
       currMonth: new Date().getMonth(),
-      currYear: new Date().getFullYear(),
       weekdayCaptions: [],
       startOfTheWeek: 1, // "Monday"
       rooms: 3,
@@ -239,7 +250,7 @@ export default {
               endWeek = false;
               duration = 15;
             }
-            calObj = { 
+            calObj = {
               id: event.id,
               room: event.room,
               startWeek: i,
