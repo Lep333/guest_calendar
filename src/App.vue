@@ -1,7 +1,7 @@
 <template>
-  <div class="hello">
+  <div>
     <TimeLabel @prev-month="goToLastMonth()" @next-month="goToNextMonth()" :month="currMonth" :year="currYear"></TimeLabel>
-    <div class="wrapper" :style="{'--no-rows': (this.getDaysToShow / 7) * 4 + 1}">
+    <div class="wrapper" :style="{'--no-rows': (this.getDaysToShow / 7) * (this.timeSlots + 1) + 1}">
       <div
           v-for="(weekday, index) in 7"
           :key="weekday"
@@ -21,7 +21,7 @@
             weekday.toLocaleString('en-GB', { weekday: 'long' }),
             weekday.getMonth() === currMonth ? 'currentMonth' : ''
           ]"
-          :style="{'--start': (index % 7) * 2 + 1, '--end': (index % 7) * 2 + 3, '--row': 2 + Math.floor(index / 7) * 4}"
+          :style="getCaptionStyle(index)"
         >
           {{ weekday.getDate() }}
         </div>
@@ -57,6 +57,12 @@ import TimeLabel from './components/TimeLabel.vue';
 export default {
   components: { TimeLabel },
   name: "GuestCalendar",
+  props: {
+    timeSlots: {
+      type: Number,
+      default: 3,
+    },
+  },
   setup() {
     let currYear = ref(new Date().getFullYear());
 
@@ -73,7 +79,6 @@ export default {
       currMonth: new Date().getMonth(),
       weekdayCaptions: [],
       startOfTheWeek: 1, // "Monday"
-      rooms: 3,
       selectedEvent : null,
       x: 0,
       y: 0,
@@ -89,7 +94,7 @@ export default {
         { id: 4, room: 2, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
         { id: 5, room: 3, start: new Date(2023, 10, 3), end: new Date(2023, 10, 6) },
         { id: 6, room: 1, start: new Date(2023, 10, 6), end: new Date(2023, 10, 8) },
-        { id: 7, room: 1, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
+        { id: 7, room: 3, start: new Date(2023, 10, 30), end: new Date(2023, 11, 12) },
         { id: 8, room: 1, start: new Date(2024, 1, 8), end: new Date(2024, 1, 10) },
         { id: 9, room: 1, prename: "Hier Könnte", name: "Ihr Name Stehen", start: new Date(2024, 8, 3), end: new Date(2024, 8, 10) },
       ],
@@ -122,14 +127,26 @@ export default {
     dayToActualCalendarDay(day) {
       return (day.getDay() - this.startOfTheWeek + 7) % 7;
     },
+    getCaptionStyle(index) {
+      const noHeaderRows = 2;
+      const noWeeklyHeaderRows = 1;
+      return `--start: ${(index % 7) * 2 + 1};
+        --end: ${(index % 7) * 2 + 3};
+        --row: ${noHeaderRows + Math.floor(index / 7) * (noWeeklyHeaderRows + this.timeSlots)}`;
+    },
     getEventStyle(event) {
+      const noHeaderRows = 2;
+      const weeklyHeaderRows = 1;
       let duration = event.duration - event.startSlot;
       let eventStyle = `polygon(${
         event.start ? (1 / (duration * 2)) * 100 : 0
       }% 0%, 100% 0%, ${
         event.end ? 100 - (1 / (duration * 2)) * 100 : 100
       }% 100%, 0% 100%)`;
-      return `--start: ${event.startSlot}; --end: ${event.duration}; --row: ${(2 + event.room) + event.startWeek * 4 }; --poly: ${eventStyle}`;
+      return `--start: ${event.startSlot};
+        --end: ${event.duration};
+        --row: ${(noHeaderRows + event.room) + event.startWeek * (weeklyHeaderRows + this.timeSlots) };
+        --poly: ${eventStyle}`;
     },
     getDayCaption() {
       let desktop = window.matchMedia("(min-width: 768px)");
