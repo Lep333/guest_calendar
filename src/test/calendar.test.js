@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import app from "../App.vue";
+import app from "../GuestCalendar.vue";
 import { describe, expect, test } from "vitest";
 import { end } from "happy-dom/lib/PropertySymbol.js";
 
@@ -96,67 +96,63 @@ describe("App.vue", () => {
     })
 
     test("event rendered correctly: starts before curr month ends in curr month", async () => {
-        const wrapper = mount(app);
-
         let today = new Date();
         let startDate = new Date(today.getFullYear(), today.getMonth() - 1);
         let endDate = new Date(today.getFullYear(), today.getMonth());
-        wrapper.vm.events = [
-            { room: 1, start: startDate, end: endDate },
+        const events = [
+            { id: 1, room: 1, start: startDate, end: endDate },
         ];
-        await wrapper.vm.$nextTick();
+        const wrapper = mount(app, {props: {events}});
 
-        let events = wrapper.findAll(".event");
+        let found_events = wrapper.findAll(".event");
         let expected_no_of_events = 1;
-        expect(events.length).toBe(expected_no_of_events);
+        expect(found_events.length).toBe(expected_no_of_events);
     })
 
     test("event rendered correctly: starts before curr month ends after curr month", async () => {
-        const wrapper = mount(app);
-
         let today = new Date();
         let startDate = new Date(today.getFullYear(), today.getMonth() - 1);
         let endDate = new Date(today.getFullYear(), today.getMonth() + 1);
-        wrapper.vm.events = [
-            { room: 1, start: startDate, end: endDate },
+        let events = [
+            { id: 1, room: 1, start: startDate, end: endDate },
         ];
-        await wrapper.vm.$nextTick();
+        const wrapper = mount(app, {props: {events}});
 
-        let events = wrapper.findAll(".event");
+        let found_events = wrapper.findAll(".event");
         let expected_no_of_events = wrapper.vm.getDays.length / 7;
-        expect(events.length).toBe(expected_no_of_events);
+        expect(found_events.length).toBe(expected_no_of_events);
     })
 
     test("event rendered correctly: starts curr month ends after curr month", async () => {
-        const wrapper = mount(app);
-
         let today = new Date();
         let startDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
         let endDate = new Date(today.getFullYear(), today.getMonth() + 1);
-        wrapper.vm.events = [
+        let events = [
             { room: 1, start: startDate, end: endDate },
         ];
+        const wrapper = mount(app, {props: {events}});
+
+
         await wrapper.vm.$nextTick();
 
-        let events = wrapper.findAll(".event");
+        let found_events = wrapper.findAll(".event");
         let expected_no_of_events = 1;
-        expect(events.length).toBe(expected_no_of_events);
+        expect(found_events.length).toBe(expected_no_of_events);
     })
 
     test("event rendered correctly: starts curr month ends curr month", async () => {
         const wrapper = mount(app);
-
         let today = new Date();
         let startDate = wrapper.vm.getDays[7];
         let endDate = wrapper.vm.getDays[13];
-        wrapper.vm.events = [
+        let events = [
             { room: 1, start: startDate, end: endDate },
         ];
-        await wrapper.vm.$nextTick();
+        await wrapper.setProps({events: events});
 
-        let events = wrapper.findAll(".event");
+        let found_events = wrapper.findAll(".event");
         let expected_no_of_events = 1;
-        expect(events.length).toBe(expected_no_of_events);
+        expect(found_events.length).toBe(expected_no_of_events);
     })
 
     test("event rendered correctly: starts curr month ends curr month; 2week long event", async () => {
@@ -164,14 +160,14 @@ describe("App.vue", () => {
 
         let startDate = wrapper.vm.getDays[7];
         let endDate = wrapper.vm.getDays[20];
-        wrapper.vm.events = [
+        let events = [
             { room: 1, start: startDate, end: endDate },
         ];
-        await wrapper.vm.$nextTick();
+        await wrapper.setProps({events: events});
 
-        let events = wrapper.findAll(".room1");
+        let found_events = wrapper.findAll(".room1");
         let expected_no_of_events = 2;
-        expect(events.length).toBe(expected_no_of_events);
+        expect(found_events.length).toBe(expected_no_of_events);
     })
 
     test("event rendered correctly: room2", async () => {
@@ -179,14 +175,14 @@ describe("App.vue", () => {
 
         let startDate = wrapper.vm.getDays[7];
         let endDate = wrapper.vm.getDays[20];
-        wrapper.vm.events = [
+        let events = [
             { room: 2, start: startDate, end: endDate },
         ];
-        await wrapper.vm.$nextTick();
+        await wrapper.setProps({events: events});
 
-        let events = wrapper.findAll(".room2");
+        let found_events = wrapper.findAll(".room2");
         let expected_no_of_events = 2;
-        expect(events.length).toBe(expected_no_of_events);
+        expect(found_events.length).toBe(expected_no_of_events);
     })
 
     test("event rendered correctly: room3", async () => {
@@ -194,14 +190,14 @@ describe("App.vue", () => {
 
         let startDate = wrapper.vm.getDays[7];
         let endDate = wrapper.vm.getDays[20];
-        wrapper.vm.events = [
+        const events = [
             { room: 3, start: startDate, end: endDate },
         ];
-        await wrapper.vm.$nextTick();
+        await wrapper.setProps({events: events});
 
-        let events = wrapper.findAll(".room3");
+        let found_events = wrapper.findAll(".room3");
         let expected_no_of_events = 2;
-        expect(events.length).toBe(expected_no_of_events);
+        expect(found_events.length).toBe(expected_no_of_events);
     })
 
     test("event detail windows opens and closes. Also correct details info is shown", async () => {
@@ -214,10 +210,10 @@ describe("App.vue", () => {
             month: 'numeric',
             day: 'numeric',
         };
-        wrapper.vm.events = [
+        const events = [
             { room: 3, start: startDate, end: endDate },
         ];
-        await wrapper.vm.$nextTick();
+        await wrapper.setProps({events: events});
 
         expect(wrapper.find(".eventWindow").exists()).toBe(false);
         await wrapper.find(".event").trigger("click");

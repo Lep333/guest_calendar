@@ -1,22 +1,30 @@
 <template>
-    <div id="yearSelector">
-        <template v-for="i in 9" :key="i">
-            <div 
-            :id="setSelectedYear(this.year + i - 5)"
-            class="year"
-            @click="triggerYear(this.year + i - 5)"
-            >
-                {{ this.year + i - 5 }}
-            </div>
-        </template>
-    </div>
+  <div id="yearSelector">
+    <template
+      v-for="i in 9"
+      :key="i"
+    >
+      <div 
+        :id="setSelectedYear(year + i - 5)"
+        class="year"
+        @click="triggerYear(year + i - 5)"
+      >
+        {{ year + i - 5 }}
+      </div>
+    </template>
+  </div>
 </template>
 
 <script>
 import { inject } from 'vue';
 
 export default {
-    props: ["year"],
+    props: {
+      year: {
+        type: Number,
+        default: new Date().getFullYear(),
+      }
+    },
     setup() {
         const yearChange = inject("set-year");
         

@@ -1,23 +1,43 @@
 <template>
-    <div id="root">
-        <div id="month">
-            <img id="prevMonth" class="monthButton" @click="$emit('prev-month')" src="../assets/arrow_left.svg" alt="Previous Month">
-            <div class="monthCaption">
-                {{
-                new Date(year, month).toLocaleString("default", {month: "long"})
-                }}
-            </div>
-            <img id="nextMonth" class="monthButton" @click="$emit('next-month')" src="../assets/arrow_right.svg" alt="Next Month">
-        </div>
-        <div id="yearParent">
-            <div @click="showYearSelector=true" ref="yearLabel" class="yearCaption">
-                {{
-                new Date(year, month).toLocaleString("default", {year: "numeric"})
-                }}
-            </div>
-            <YearSelector v-if="showYearSelector" id="yearSelector" :year="this.year"></YearSelector>
-        </div>
+  <div id="root">
+    <div id="month">
+      <img
+        id="prevMonth"
+        class="monthButton"
+        src="../assets/arrow_left.svg"
+        alt="Previous Month"
+        @click="$emit('prev-month')"
+      >
+      <div class="monthCaption">
+        {{
+          new Date(year, month).toLocaleString("default", {month: "long"})
+        }}
+      </div>
+      <img
+        id="nextMonth"
+        class="monthButton"
+        src="../assets/arrow_right.svg"
+        alt="Next Month"
+        @click="$emit('next-month')"
+      >
     </div>
+    <div id="yearParent">
+      <div
+        ref="yearLabel"
+        class="yearCaption"
+        @click="showYearSelector=true"
+      >
+        {{
+          new Date(year, month).toLocaleString("default", {year: "numeric"})
+        }}
+      </div>
+      <YearSelector
+        v-if="showYearSelector"
+        id="yearSelector"
+        :year="year"
+      />
+    </div>
+  </div>
 </template>
 
 <script>
@@ -26,7 +46,16 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 
 export default {
     components: { YearSelector },
-    props: ["month", "year"],
+    props: {
+      month: {
+        type: Number,
+        default: 0,
+      },
+      year: {
+        type: Number,
+        default: new Date().getFullYear(),
+      }
+    },
     emits: ["prev-month", "next-month"],
     setup() {
         const showYearSelector = ref(false);
