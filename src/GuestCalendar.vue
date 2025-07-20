@@ -37,7 +37,7 @@
         v-for="event in setCalEvents"
         :key="event.id"
         class="event"
-        :class="'room' + (event.room % 3 + 1)"
+        :class="`room${(event.room - 1) % 3 + 1}`"
         :style="getEventStyle(event)"
         @click="setSelectedEvent($event, event)"
       />
@@ -99,19 +99,21 @@ export default {
       default: 1, // "Monday"
     },
   },
-  setup() {
+  emits: ["calendar-date-change"],
+  setup(props, { emit }) {
     let currYear = ref(new Date().getFullYear());
+    let currMonth = ref(new Date().getMonth());
 
     function changeYear(year: number) {
       currYear.value = year;
+      emit("calendar-date-change", currYear.value, currMonth.value);
     }
 
     provide("set-year", changeYear);
-    return { currYear };
+    return { currYear, currMonth };
   },
   data() {
     return {
-      currMonth: new Date().getMonth(),
       selectedEvent : null,
       x: 0,
       y: 0,
@@ -172,11 +174,9 @@ export default {
         for (let i = 0; i < this.getDays.length / 7; i++) {
           let startOfWeek = this.getDays[i * 7];
           let endOfWeek = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + 7);
-          console.log(endOfWeek);
           let startWeek = false;
             
           if (event.start < endOfWeek && event.end >= startOfWeek) {
-            console.log("oi");
             let startSlot;
             let duration;
             let endWeek;
@@ -269,6 +269,7 @@ export default {
       } else {
         this.currMonth--;
       }
+      this.$emit("calendar-date-change", this.currYear, this.currMonth);
     }, 
     goToNextMonth() {
       if (this.currMonth == 11) {
@@ -277,6 +278,7 @@ export default {
       } else {
         this.currMonth++;
       }
+      this.$emit("calendar-date-change", this.currYear, this.currMonth);
     },
     printEvent() {
       if (this.selectedEvent == null)
@@ -334,13 +336,13 @@ span {
   height: 30;
   clip-path: var(--poly);
 }
-.room1 {
+.room0 {
   background-color: #c1666b;
 }
-.room2 {
+.room1 {
   background-color: #d4b483;
 }
-.room3 {
+.room2 {
   background-color: #508991;
 }
 .monthCaption {

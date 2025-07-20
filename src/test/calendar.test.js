@@ -161,11 +161,12 @@ describe("App.vue", () => {
         let startDate = wrapper.vm.getDays[7];
         let endDate = wrapper.vm.getDays[20];
         let events = [
-            { room: 1, start: startDate, end: endDate },
+            { room: 0, start: startDate, end: endDate },
         ];
         await wrapper.setProps({events: events});
+        await wrapper.vm.$nextTick();
 
-        let found_events = wrapper.findAll(".room1");
+        let found_events = wrapper.findAll(".room0");
         let expected_no_of_events = 2;
         expect(found_events.length).toBe(expected_no_of_events);
     })
@@ -176,11 +177,11 @@ describe("App.vue", () => {
         let startDate = wrapper.vm.getDays[7];
         let endDate = wrapper.vm.getDays[20];
         let events = [
-            { room: 2, start: startDate, end: endDate },
+            { room: 1, start: startDate, end: endDate },
         ];
         await wrapper.setProps({events: events});
 
-        let found_events = wrapper.findAll(".room2");
+        let found_events = wrapper.findAll(".room1");
         let expected_no_of_events = 2;
         expect(found_events.length).toBe(expected_no_of_events);
     })
@@ -191,11 +192,11 @@ describe("App.vue", () => {
         let startDate = wrapper.vm.getDays[7];
         let endDate = wrapper.vm.getDays[20];
         const events = [
-            { room: 3, start: startDate, end: endDate },
+            { room: 2, start: startDate, end: endDate },
         ];
         await wrapper.setProps({events: events});
 
-        let found_events = wrapper.findAll(".room3");
+        let found_events = wrapper.findAll(".room2");
         let expected_no_of_events = 2;
         expect(found_events.length).toBe(expected_no_of_events);
     })
