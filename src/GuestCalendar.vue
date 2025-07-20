@@ -11,19 +11,19 @@
       :style="{'--no-rows': (getDaysToShow / 7) * (timeSlots + 1) + 1}"
     >
       <div
-        v-for="(weekday, index) in 7"
-        :key="weekday"
+        v-for="index in 7"
+        :key="index"
         :class="
-          String(getDays[weekday - 1].toLocaleString('en-GB', {weekday: 'long'}))
+          String(getDays[index - 1].toLocaleString('en-GB', {weekday: 'long'}))
         "
         class="weekdayCaption"
-        :style="{'--start': index * 2 + 1, '--end': index * 2 + 3, '--row': 1}"
+        :style="{'--start': index * 2 - 1, '--end': index * 2 + 1, '--row': 1}"
       >
-        {{ weekdayCaptions[weekday - 1] }}
+        {{ getDayCaption[index - 1] }}
       </div>
       <div
         v-for="(weekday, index) in getDays"
-        :key="weekday"
+        :key="index"
         class="dayCaption weekTd"
         :class="[
           weekday.toLocaleString('en-GB', { weekday: 'long' }),
@@ -35,9 +35,9 @@
       </div>
       <div
         v-for="event in setCalEvents"
-        :key="event"
+        :key="event.id"
         class="event"
-        :class="'room' + event.room"
+        :class="'room' + (event.room % 3 + 1)"
         :style="getEventStyle(event)"
         @click="setSelectedEvent($event, event)"
       />
@@ -70,6 +70,7 @@
 </template>
 
 <script lang="ts">
+import {v4 as uuidv4} from 'uuid';
 import { nextTick } from 'vue';
 import { ref, provide } from 'vue';
 import TimeLabel from './components/TimeLabel.vue';
@@ -101,7 +102,7 @@ export default {
   setup() {
     let currYear = ref(new Date().getFullYear());
 
-    function changeYear(year) {
+    function changeYear(year: number) {
       currYear.value = year;
     }
 
@@ -111,10 +112,10 @@ export default {
   data() {
     return {
       currMonth: new Date().getMonth(),
-      weekdayCaptions: [],
       selectedEvent : null,
       x: 0,
       y: 0,
+      screenSizeChange: "long",
     };
   },
   computed: {
@@ -148,6 +149,16 @@ export default {
 
       return weeksToShow * 7;
     },
+    getDayCaption() {
+      let weekdayCaptions = []
+      let i = 0;
+      while (i < 7) {
+        let day = this.getDays[i]
+        weekdayCaptions.push(day.toLocaleString("default", {weekday: this.screenSizeChange}));
+        i++;
+      }
+      return  weekdayCaptions;
+    },
     setCalEvents() {
       let calEvents = [];
       let calObj;
@@ -160,21 +171,22 @@ export default {
       for (let event of events_this_month) {
         for (let i = 0; i < this.getDays.length / 7; i++) {
           let startOfWeek = this.getDays[i * 7];
-          let endOfWeek = this.getDays[i * 7 + 6];
-          
+          let endOfWeek = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + 7);
+          console.log(endOfWeek);
           let startWeek = false;
             
-          if (event.start <= endOfWeek && event.end >= startOfWeek) {
+          if (event.start < endOfWeek && event.end >= startOfWeek) {
+            console.log("oi");
             let startSlot;
             let duration;
             let endWeek;
-            if (event.start >= startOfWeek && event.start <= endOfWeek) {
+            if (event.start >= startOfWeek && event.start < endOfWeek) {
               startWeek = true;
               startSlot = this.dayToActualCalendarDay(event.start) * 2 + 2;
             } else {
               startSlot = 1;
             }
-            if (event.end >= startOfWeek && event.end <= endOfWeek) {
+            if (event.end >= startOfWeek && event.end < endOfWeek) {
               endWeek = true;
               duration = this.dayToActualCalendarDay(event.end) * 2 + 2;
             } else {
@@ -182,7 +194,8 @@ export default {
               duration = 15;
             }
             calObj = {
-              id: event.id,
+              id: uuidv4(),
+              eventID: event.id,
               room: event.room,
               startWeek: i,
               startSlot: startSlot,
@@ -199,10 +212,14 @@ export default {
   },
   mounted() {
     let desktop = window.matchMedia("(min-width: 768px)");
-    this.getDayCaption(desktop);
-    desktop.addEventListener("change", this.getDayCaption);
+    this.screenSizeChange = desktop.matches? "long": "short";
+    desktop.addEventListener("change", this.screenChange);
   },
   methods: {
+    screenChange() {
+      let desktop = window.matchMedia("(min-width: 768px)");
+      this.screenSizeChange = desktop.matches? "long": "short";
+    },
     setSelectedEvent(payload, e) {
       this.selectedEvent = e;
       this.x = payload.x + window.scrollX;
@@ -221,10 +238,10 @@ export default {
         }
       })
     },
-    dayToActualCalendarDay(day) {
+    dayToActualCalendarDay(day: Date) {
       return (day.getDay() - this.startOfTheWeek + 7) % 7;
     },
-    getCaptionStyle(index) {
+    getCaptionStyle(index: number) {
       const noHeaderRows = 2;
       const noWeeklyHeaderRows = 1;
       return `--start: ${(index % 7) * 2 + 1};
@@ -244,19 +261,6 @@ export default {
         --end: ${event.duration};
         --row: ${(noHeaderRows + event.room) + event.startWeek * (weeklyHeaderRows + this.timeSlots) };
         --poly: ${eventStyle}`;
-    },
-    getDayCaption() {
-      let desktop = window.matchMedia("(min-width: 768px)");
-
-      let option = desktop.matches? "long": "short";
-      let weekdayCaptions = []
-      let i = 0;
-      while (i < 7) {
-        let day = this.getDays[i]
-        weekdayCaptions.push(day.toLocaleString("default", {weekday: option}));
-        i++;
-      }
-      this.weekdayCaptions =  weekdayCaptions;
     },
     goToLastMonth() {
       if (this.currMonth == 0) {
@@ -285,7 +289,7 @@ export default {
         day: 'numeric',
       };
       for (let el of this.events) {
-        if (this.selectedEvent.id == el.id) {
+        if (this.selectedEvent.eventID == el.id) {
           event = el;
           break;
         }
