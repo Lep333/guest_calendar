@@ -19,10 +19,12 @@ export default defineComponent ({
   data() {
     return {
       events: [
-          {id: 2, room: 1, start: new Date(2025, 6, 3), end: new Date(2025, 7, 22)},
-          {id: 4, room: 3, start: new Date(2025, 6, 10), end: new Date(2025, 7, 15)},
+          {id: 2, room: 1, start: new Date(2025, 6, 3), end: new Date(2025, 6, 12)},
+          {id: 4, room: 3, start: new Date(2025, 6, 10), end: new Date(2025, 6, 15)},
           {id: 3, room: 2, start: new Date(2025, 6, 17), end: new Date(2025, 6, 24)},
           {id: 5, room: 4, start: new Date(), end: new Date(2025, 7, 25)},
+          {id: 6, room: 4, start: new Date(2025, 6, 18), end: new Date(2025, 6, 20)},
+          {id: 7, room: 2, start: new Date(2025, 6, 2), end: new Date(2025, 6, 5)},
       ]
     }
   },

@@ -126,35 +126,39 @@ export default {
     },
     getDays() {
       let weeks = [];
+      const weekLength = 7;
+      const firstDayOfMonth = 1;
       let daysBeforeMonth =
-        Math.abs(this.currStartOfTheMonth.getDay() - this.startOfTheWeek + 7) %
-        7;
+        Math.abs(this.currStartOfTheMonth.getDay() - this.startOfTheWeek + weekLength) %
+        weekLength;
 
       let dayOffset = -daysBeforeMonth;
 
       for (let index = 0; index < this.getDaysToShow; index++) {
         weeks.push(
-            new Date(this.currYear, this.currMonth, 1 + dayOffset + index)
+            new Date(this.currYear, this.currMonth, firstDayOfMonth + dayOffset + index)
           );
       }
       return weeks;
     },
     getDaysToShow() {
+      const weekLength = 7;
       let daysBeforeMonth =
-        Math.abs(7 + (this.currStartOfTheMonth.getDay() - this.startOfTheWeek)) % 7;
+        Math.abs(weekLength + (this.currStartOfTheMonth.getDay() - this.startOfTheWeek)) % weekLength;
       let daysTillEndOfMonth = new Date(
         this.currYear,
         this.currMonth + 1,
         0
       ).getDate();
-      let weeksToShow = Math.ceil((daysBeforeMonth + daysTillEndOfMonth) / 7);
+      let weeksToShow = Math.ceil((daysBeforeMonth + daysTillEndOfMonth) / weekLength);
 
-      return weeksToShow * 7;
+      return weeksToShow * weekLength;
     },
     getDayCaption() {
+      const weekLength = 7;
       let weekdayCaptions = []
       let i = 0;
-      while (i < 7) {
+      while (i < weekLength) {
         let day = this.getDays[i]
         weekdayCaptions.push(day.toLocaleString("default", {weekday: this.screenSizeChange}));
         i++;
@@ -162,6 +166,7 @@ export default {
       return  weekdayCaptions;
     },
     setCalEvents() {
+      const weekLength = 7;
       let calEvents = [];
       let calObj;
 
@@ -171,9 +176,9 @@ export default {
       let events_this_month = this.events.filter((event) => (event.start <= lastCalMonth || event.end >= firstCalMonth));
       
       for (let event of events_this_month) {
-        for (let i = 0; i < this.getDays.length / 7; i++) {
-          let startOfWeek = this.getDays[i * 7];
-          let endOfWeek = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + 7);
+        for (let i = 0; i < this.getDays.length / weekLength; i++) {
+          let startOfWeek = this.getDays[i * weekLength];
+          let endOfWeek = new Date(startOfWeek.getFullYear(), startOfWeek.getMonth(), startOfWeek.getDate() + weekLength);
           let startWeek = false;
             
           if (event.start < endOfWeek && event.end >= startOfWeek) {
@@ -239,14 +244,16 @@ export default {
       })
     },
     dayToActualCalendarDay(day: Date) {
-      return (day.getDay() - this.startOfTheWeek + 7) % 7;
+      const weekLength = 7;
+      return (day.getDay() - this.startOfTheWeek + weekLength) % weekLength;
     },
     getCaptionStyle(index: number) {
+      const weekLength = 7;
       const noHeaderRows = 2;
       const noWeeklyHeaderRows = 1;
-      return `--start: ${(index % 7) * 2 + 1};
-        --end: ${(index % 7) * 2 + 3};
-        --row: ${noHeaderRows + Math.floor(index / 7) * (noWeeklyHeaderRows + this.timeSlots)}`;
+      return `--start: ${(index % weekLength) * 2 + 1};
+        --end: ${(index % weekLength) * 2 + 3};
+        --row: ${noHeaderRows + Math.floor(index / weekLength) * (noWeeklyHeaderRows + this.timeSlots)}`;
     },
     getEventStyle(event) {
       const noHeaderRows = 2;
